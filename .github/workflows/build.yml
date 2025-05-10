@@ -34,7 +34,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.23.0'
           cache: true
           
       - name: Install gomobile
@@ -68,7 +68,7 @@ jobs:
         run: chmod +x ./gradlew
           
       - name: Build with Gradle
-        run: ./gradlew assembleDebug --stacktrace --debug --info
+        run: ./gradlew assembleDebug --debug
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
