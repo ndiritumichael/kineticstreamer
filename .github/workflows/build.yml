@@ -57,7 +57,7 @@ jobs:
           mkdir -p app/src/main/libs
           
       - name: Build with Gradle
-        run: ./gradlew assembleDebug --info
+        run: ./gradlew assembleDebug --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         
