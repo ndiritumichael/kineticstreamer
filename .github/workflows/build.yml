@@ -63,6 +63,9 @@ jobs:
         run: |
           mkdir -p app/src/main/go/third_party
           mkdir -p app/src/main/libs
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
           
       - name: Build with Gradle
         run: ./gradlew assembleDebug --stacktrace --debug --info
