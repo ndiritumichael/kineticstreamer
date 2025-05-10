@@ -68,17 +68,16 @@ jobs:
         run: chmod +x ./gradlew
           
       - name: Build with Gradle
-        run: ./gradlew assembleDebug --debug
+        run: ./gradlew assembleDebug --debug --info --stacktrace > build.log 2>&1 || true
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
-      - name: Upload logs if build fails
-        if: failure()
-        uses: actions/upload-artifact@v4
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v2
         with:
-          name: gradle-logs
-          path: app/build/reports/
-          retention-days: 7
+          name: build-logs
+          path: build.log
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
