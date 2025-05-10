@@ -120,6 +120,11 @@ afterEvaluate {
     tasks.named("buildGoLibrary").configure {
         dependsOn("externalNativeBuildDebug")
     }
+
+    // Make Kotlin compile tasks depend on buildGoLibrary
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        dependsOn("buildGoLibrary")
+    }
 }
 
 dependencies {
