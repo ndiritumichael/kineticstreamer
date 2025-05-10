@@ -74,6 +74,20 @@ ExternalProject_Add(srt
         BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/lib/libsrt.so
 )
 
+# Copy libsrt.so to the go folder
+add_custom_command(
+        TARGET srt POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/../go/third_party/srt/scripts/build-android/${ANDROID_ABI}/lib
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/../go/third_party/srt/scripts/build-android/${ANDROID_ABI}/include/srt
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_BINARY_DIR}/lib/libsrt.so
+        ${CMAKE_SOURCE_DIR}/../go/third_party/srt/scripts/build-android/${ANDROID_ABI}/lib/
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_BINARY_DIR}/include/srt
+        ${CMAKE_SOURCE_DIR}/../go/third_party/srt/scripts/build-android/${ANDROID_ABI}/include/srt
+        COMMENT "Copying SRT libraries and headers to go/third_party/srt/scripts/build-android/${ANDROID_ABI}"
+)
+
 # Setup native library 
 link_directories(${CMAKE_BINARY_DIR}/lib)
 include_directories(${CMAKE_BINARY_DIR}/include)
