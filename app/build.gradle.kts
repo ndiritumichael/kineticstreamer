@@ -67,6 +67,13 @@ android {
             version = "3.22.1"
         }
     }
+
+    sourceSets {
+        getByName("main") {
+
+            jniLibs.setSrcDirs(listOf("src/main/jniLibs", "build/intermediates/cmake/debug/obj"))
+        }
+    }
 }
 
 // Create a custom task to build the Go library
@@ -76,7 +83,17 @@ tasks.register<Exec>("buildGoLibrary") {
     mkdir(libDir)
     
     workingDir = file("src/main/go")
-    commandLine("./build.sh", libDir.absolutePath)
+    // Check if we're on Windows
+    val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+    val scriptFile = if (isWindows) "build.bat" else "build.sh"
+
+    val scriptPath = file("src/main/go/$scriptFile").absolutePath
+
+    if (isWindows) {
+        commandLine("cmd", "/c", scriptPath, libDir.absolutePath,)
+    } else {
+        commandLine("sh", scriptPath, libDir.absolutePath, )
+    }
     
     doLast {
         // Create the libs directory if it doesn't exist
