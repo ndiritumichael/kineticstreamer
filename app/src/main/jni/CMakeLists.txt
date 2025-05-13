@@ -61,7 +61,7 @@ ExternalProject_Add(mbedtls
         BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/lib/libmbedtls.so ${CMAKE_BINARY_DIR}/lib/libmbedx509.so ${CMAKE_BINARY_DIR}/lib/libmbedcrypto.so
 )
 
-ExternalProject_Add(srt
+ExternalProject_Add(srt_external_build
         GIT_REPOSITORY "https://github.com/Haivision/srt.git"
         GIT_TAG "v1.5.4"
         CMAKE_ARGS ${ANDROID_CMAKE_ARGS}
@@ -79,9 +79,13 @@ ExternalProject_Add(srt
         BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/lib/libsrt.so
 )
 
+# Add an imported target for srt
+add_library(srt SHARED IMPORTED)
+add_dependencies(srt srt_external_build) # Ensure srt_external_build is built before srt is used
+
 # Copy libsrt.so to the go folder
 add_custom_command(
-        TARGET srt POST_BUILD
+        TARGET srt_external_build POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/../go/third_party/srt/scripts/build-android/${ANDROID_ABI}/lib
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/../go/third_party/srt/scripts/build-android/${ANDROID_ABI}/include/srt
         COMMAND ${CMAKE_COMMAND} -E copy
@@ -93,13 +97,12 @@ add_custom_command(
         COMMENT "Copying SRT libraries and headers to go/third_party/srt/scripts/build-android/${ANDROID_ABI}"
 )
 
-# Setup native library 
+# Setup native library
 link_directories(${CMAKE_BINARY_DIR}/lib)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
-
 add_library(kinetic SHARED kinetic.c)
-add_dependencies(kinetic libjpeg-turbo libusb libuvc mbedtls srt)
+add_dependencies(kinetic libjpeg-turbo libusb libuvc mbedtls srt_external_build)
 target_include_directories(kinetic PRIVATE ${CMAKE_BINARY_DIR}/include)
 
 # Set properties for the imported libraries
@@ -111,15 +114,18 @@ set_target_properties(turbojpeg PROPERTIES
         IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/lib/libturbojpeg.so"
         IMPORTED_SONAME "libturbojpeg.so")
 
+set_target_properties(srt PROPERTIES
+        IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/lib/libsrt.so"
+        IMPORTED_SONAME "libsrt.so")
+
 # Link directly against the libraries
 target_link_libraries(kinetic
-        turbojpeg
         jpeg
-    ${CMAKE_BINARY_DIR}/lib/libusb-1.0.so
-    ${CMAKE_BINARY_DIR}/lib/libuvc.so
-
-    ${CMAKE_BINARY_DIR}/lib/libmbedtls.so
-    ${CMAKE_BINARY_DIR}/lib/libmbedx509.so
-    ${CMAKE_BINARY_DIR}/lib/libmbedcrypto.so
-    ${CMAKE_BINARY_DIR}/lib/libsrt.so
+        turbojpeg
+        ${CMAKE_BINARY_DIR}/lib/libusb-1.0.so
+        ${CMAKE_BINARY_DIR}/lib/libuvc.so
+        ${CMAKE_BINARY_DIR}/lib/libmbedtls.so
+        ${CMAKE_BINARY_DIR}/lib/libmbedx509.so
+        ${CMAKE_BINARY_DIR}/lib/libmbedcrypto.so
+        srt
 )
