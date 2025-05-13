@@ -21,9 +21,14 @@ set(ANDROID_CMAKE_ARGS
 ExternalProject_Add(libjpeg-turbo
         GIT_REPOSITORY "https://github.com/libjpeg-turbo/libjpeg-turbo.git"
         GIT_TAG "3.0.2"
-        CMAKE_ARGS ${ANDROID_CMAKE_ARGS} -DENABLE_SHARED=ON
+        CMAKE_ARGS ${ANDROID_CMAKE_ARGS} -DENABLE_SHARED=ON -DUSE_STATIC_MBEDTLS_LIBRARY=OFF
+        -DUSE_SHARED_MBEDTLS_LIBRARY=ON
         BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/lib/libjpeg.so ${CMAKE_BINARY_DIR}/lib/libturbojpeg.so
 )
+
+# After ExternalProject_Add for libjpeg-turbo:
+add_library(jpeg SHARED IMPORTED)
+add_library(turbojpeg SHARED IMPORTED)
 
 ExternalProject_Add(libusb
         GIT_REPOSITORY "https://github.com/libusb/libusb-cmake.git"
@@ -97,10 +102,19 @@ add_library(kinetic SHARED kinetic.c)
 add_dependencies(kinetic libjpeg-turbo libusb libuvc mbedtls srt)
 target_include_directories(kinetic PRIVATE ${CMAKE_BINARY_DIR}/include)
 
+# Set properties for the imported libraries
+set_target_properties(jpeg PROPERTIES
+        IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/lib/libjpeg.so"
+        IMPORTED_SONAME "libjpeg.so")
+
+set_target_properties(turbojpeg PROPERTIES
+        IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/lib/libturbojpeg.so"
+        IMPORTED_SONAME "libturbojpeg.so")
+
 # Link directly against the libraries
 target_link_libraries(kinetic
-        ${CMAKE_BINARY_DIR}/lib/libjpeg.so
-    ${CMAKE_BINARY_DIR}/lib/libturbojpeg.so
+        turbojpeg
+        jpeg
     ${CMAKE_BINARY_DIR}/lib/libusb-1.0.so
     ${CMAKE_BINARY_DIR}/lib/libuvc.so
 
