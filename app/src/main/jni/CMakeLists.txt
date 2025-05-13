@@ -92,15 +92,18 @@ add_custom_command(
 link_directories(${CMAKE_BINARY_DIR}/lib)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
+
 add_library(kinetic SHARED kinetic.c)
 add_dependencies(kinetic libjpeg-turbo libusb libuvc mbedtls srt)
+target_include_directories(kinetic PRIVATE ${CMAKE_BINARY_DIR}/include)
 
 # Link directly against the libraries
 target_link_libraries(kinetic
+        ${CMAKE_BINARY_DIR}/lib/libjpeg.so
     ${CMAKE_BINARY_DIR}/lib/libturbojpeg.so
-    ${CMAKE_BINARY_DIR}/lib/libusb-1.0.so 
+    ${CMAKE_BINARY_DIR}/lib/libusb-1.0.so
     ${CMAKE_BINARY_DIR}/lib/libuvc.so
-    ${CMAKE_BINARY_DIR}/lib/libjpeg.so
+
     ${CMAKE_BINARY_DIR}/lib/libmbedtls.so
     ${CMAKE_BINARY_DIR}/lib/libmbedx509.so
     ${CMAKE_BINARY_DIR}/lib/libmbedcrypto.so

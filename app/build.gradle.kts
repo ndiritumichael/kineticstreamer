@@ -59,6 +59,7 @@ android {
         // Don't strip native libraries during APK build
         jniLibs {
             keepDebugSymbols += "**/*.so"
+            useLegacyPackaging = true
         }
     }
     externalNativeBuild {
